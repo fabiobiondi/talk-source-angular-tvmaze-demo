@@ -1,32 +1,50 @@
 import { Component } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Series, Show } from './model/series';
+import { FormControl } from '@angular/forms';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 @Component({
   selector: 'fb-root',
   template: `
-    <!--The content below is only a placeholder and can be replaced.-->
-    <div style="text-align:center" class="content">
-      <h1>
-        Welcome to {{title}}!
-      </h1>
-      <span style="display: block">{{ title }} app is running!</span>
-      <img width="300" alt="Angular Logo" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTAgMjUwIj4KICAgIDxwYXRoIGZpbGw9IiNERDAwMzEiIGQ9Ik0xMjUgMzBMMzEuOSA2My4ybDE0LjIgMTIzLjFMMTI1IDIzMGw3OC45LTQzLjcgMTQuMi0xMjMuMXoiIC8+CiAgICA8cGF0aCBmaWxsPSIjQzMwMDJGIiBkPSJNMTI1IDMwdjIyLjItLjFWMjMwbDc4LjktNDMuNyAxNC4yLTEyMy4xTDEyNSAzMHoiIC8+CiAgICA8cGF0aCAgZmlsbD0iI0ZGRkZGRiIgZD0iTTEyNSA1Mi4xTDY2LjggMTgyLjZoMjEuN2wxMS43LTI5LjJoNDkuNGwxMS43IDI5LjJIMTgzTDEyNSA1Mi4xem0xNyA4My4zaC0zNGwxNy00MC45IDE3IDQwLjl6IiAvPgogIDwvc3ZnPg==">
-    </div>
-    <h2>Here are some links to help you start: </h2>
-    <ul>
-      <li>
-        <h2><a target="_blank" rel="noopener" href="https://angular.io/tutorial">Tour of Heroes</a></h2>
-      </li>
-      <li>
-        <h2><a target="_blank" rel="noopener" href="https://angular.io/cli">CLI Documentation</a></h2>
-      </li>
-      <li>
-        <h2><a target="_blank" rel="noopener" href="https://blog.angular.io/">Angular blog</a></h2>
-      </li>
-    </ul>
-    <router-outlet></router-outlet>
+    <input type="text" [formControl]="inputRef">
+
+    <fb-list
+      [data]="result"
+      (itemClick)="itemClickHandler($event)"
+    ></fb-list>
+
+    <fb-modal
+      *ngIf="showDetails"
+      [show]="showDetails"
+      (closeModal)="closeDetails()"
+    ></fb-modal>
   `,
-  styles: []
 })
 export class AppComponent {
-  title = 'tvmaze-angular-demo-beginners';
+  result: Series[];
+  showDetails: Show;
+  inputRef = new FormControl();
+
+  constructor(private http: HttpClient) {
+    this.inputRef.valueChanges
+      .pipe(
+        debounceTime(1000),
+        distinctUntilChanged()
+      )
+      .subscribe(text => this.search(text));
+  }
+
+  itemClickHandler(series: Series): void {
+    this.showDetails = series.show;
+  }
+
+  search(text: string): void {
+    this.http.get<Series[]>('http://api.tvmaze.com/search/shows?q=' + text)
+      .subscribe(res => this.result = res)
+  }
+
+  closeDetails(): void {
+    this.showDetails = null;
+  }
 }
