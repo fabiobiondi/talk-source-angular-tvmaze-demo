@@ -7,7 +7,9 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 @Component({
   selector: 'fb-root',
   template: `
-    <input type="text" [formControl]="inputRef">
+    <input
+      placeholder="Search a TV Series"
+      type="text" [formControl]="inputRef">
 
     <fb-list
       [data]="result"
