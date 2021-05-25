@@ -7,10 +7,19 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 @Component({
   selector: 'fb-root',
   template: `
+    <!-- With Debounce -->
     <input
       placeholder="Search a TV Series"
       type="text" [formControl]="inputRef">
-
+    
+    <!--Without Debounce and pressing enter-->
+    <!--
+    <input
+      placeholder="Search a TV Series"
+      type="text" [formControl]="inputRef"
+      (keydown.enter)="search(inputRef.value)"
+    >
+    -->
     <fb-list
       [data]="result"
       (itemClick)="itemClickHandler($event)"
@@ -29,12 +38,12 @@ export class AppComponent {
   inputRef = new FormControl();
 
   constructor(private http: HttpClient) {
-    this.inputRef.valueChanges
+   /* this.inputRef.valueChanges
       .pipe(
         debounceTime(1000),
         distinctUntilChanged()
       )
-      .subscribe(text => this.search(text));
+      .subscribe(text => this.search(text));*/
   }
 
   itemClickHandler(series: Series): void {
